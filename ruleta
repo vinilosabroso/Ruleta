@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ruleta de la Suerte Pastel</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        /* CSS: Estilos Generales */
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #000000;
+            --accent-color: #ff9f8c; /* Un color pastel cálido para botones y acentos */
+            --shadow-color: rgba(0,0,0,0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .main-container {
+            display: flex;
+            flex-direction: row;
+            background: #fff;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px var(--shadow-color);
+            overflow: hidden;
+            width: 100%;
+            max-width: 1100px;
+        }
+
+        /* CSS: Panel de Controles */
+        .controls-panel {
+            flex: 1;
+            padding: 40px;
+            border-right: 1px solid #eee;
+        }
+
+        #wheel-title-input {
+    font-weight: 600;
+    margin-bottom: 20px;
+    font-size: 2.2em;
+    font-family: 'Poppins', sans-serif;
+    border: none;
+    border-bottom: 2px dashed #ccc;
+    background: transparent;
+    width: 100%;
+    color: var(--text-color);
+    transition: border-color 0.3s;
+}
+
+#wheel-title-input:focus {
+    outline: none;
+    border-bottom: 2px solid var(--accent-color);
+}
+
+        .inputs-container {
+            margin-bottom: 30px;
+        }
+
+        .input-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .option-input {
+            flex: 1;
+            padding: 12px 18px;
+            border: 2px solid #f1f1f1;
+            border-radius: 10px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.1em;
+            transition: border-color 0.3s;
+        }
+
+        .option-input:focus {
+            outline: none;
+            border-color: var(--accent-color);
+        }
+
+        .remove-option-btn {
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            margin-left: 10px;
+            cursor: pointer;
+            font-size: 1em;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: background 0.3s;
+        }
+
+        .remove-option-btn:hover {
+            background: #e05c5c;
+        }
+
+        .controls-panel button {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.1em;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-bottom: 15px;
+        }
+
+        #add-option-btn {
+            background-color: #eee;
+            color: #333;
+        }
+
+        #add-option-btn:hover {
+            background-color: #ddd;
+        }
+
+        #spin-btn {
+            background-color: var(--accent-color);
+            color: #fff;
+            font-weight: 600;
+        }
+
+        #spin-btn:hover {
+            background-color: #e08c7c;
+            transform: translateY(-2px);
+        }
+
+        #spin-btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* CSS: Panel de la Ruleta */
+        .wheel-panel {
+            flex: 1.5;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: #fafafa;
+        }
+
+        .wheel-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            aspect-ratio: 1;
+        }
+
+        /* El SVG de la ruleta */
+        #wheel-svg {
+            width: 100%;
+            height: 100%;
+            transform: rotate(-90deg); /* El puntero está a la izquierda por defecto */
+            transform-origin: 50% 50%;
+            transition: transform 5s cubic-bezier(0.2, 0.8, 0.2, 1); /* Curva suave de giro */
+        }
+
+        /* El puntero de la ruleta */
+        .wheel-pointer {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            transform: translate(-50%, -50%);
+            width: 50px;
+            height: 50px;
+            background-color: var(--text-color);
+            clip-path: polygon(100% 50%, 0% 0%, 0% 100%);
+            z-index: 10;
+        }
+
+        /* El texto del ganador */
+        #winner-display {
+            margin-top: 30px;
+            font-size: 1.8em;
+            font-weight: 600;
+            text-align: center;
+            min-height: 1.8em; /* Mantiene el espacio */
+        }
+
+        /* Media queries para dispositivos móviles */
+        @media (max-width: 800px) {
+            .main-container {
+                flex-direction: column-reverse;
+            }
+
+            #wheel-title-input {
+    font-size: 1.8em;
+}
+
+            .controls-panel h1 {
+                font-size: 1.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="main-container">
+        <div class="controls-panel">
+            <input type="text" id="wheel-title-input" value="¿Qué película ver?">
+            
+            <div class="inputs-container" id="inputs-container">
+                </div>
+
+            <button id="add-option-btn">+ Añadir Opción</button>
+            <button id="spin-btn">Girar Ruleta</button>
+        </div>
+
+        <div class="wheel-panel">
+            <div class="wheel-wrapper">
+                <div class="wheel-pointer"></div>
+                <svg id="wheel-svg" viewBox="0 0 400 400"></svg>
+            </div>
+            <div id="winner-display"></div>
+        </div>
+    </div>
+
+    <script>
+        // JavaScript: Lógica de la Ruleta y los Controles
+
+        const inputsContainer = document.getElementById('inputs-container');
+        const addOptionBtn = document.getElementById('add-option-btn');
+        const spinBtn = document.getElementById('spin-btn');
+        const wheelSvg = document.getElementById('wheel-svg');
+        const winnerDisplay = document.getElementById('winner-display');
+
+        // Paleta de colores pasteles
+        const pastelColors = [
+            '#F8C8DC', // Rosa
+            '#B2E0F4', // Azul
+            '#C3E8A7', // Verde
+            '#F9F9D6', // Amarillo
+            '#E6E6FA', // Lavanda
+            '#FFD9CC', // Melocotón
+            '#E0EFF1'  // Gris azulado
+        ];
+
+        let isSpinning = false;
+        let currentRotation = 0;
+
+        // Función para obtener las opciones actuales de los inputs
+        function getOptions() {
+            const inputs = document.querySelectorAll('.option-input');
+            const options = [];
+            inputs.forEach(input => {
+                const value = input.value.trim();
+                if (value) {
+                    options.push(value);
+                }
+            });
+            return options;
+        }
+
+        // Función para dibujar la ruleta SVG
+        function drawWheel() {
+            const options = getOptions();
+            const totalOptions = options.length;
+
+            if (totalOptions === 0) {
+                wheelSvg.innerHTML = '';
+                return;
+            }
+
+            const sliceAngle = 360 / totalOptions;
+            const cx = 200;
+            const cy = 200;
+            const r = 180;
+
+            let wheelHtml = '';
+
+            for (let i = 0; i < totalOptions; i++) {
+                const startAngle = i * sliceAngle;
+                const endAngle = startAngle + sliceAngle;
+                const midAngle = (startAngle + endAngle) / 2;
+
+                // Dibujar el arco (slice)
+                wheelHtml += drawArc(cx, cy, r, startAngle, endAngle, pastelColors[i % pastelColors.length]);
+
+                // Dibujar el texto
+                wheelHtml += drawText(cx, cy, r, midAngle, options[i]);
+            }
+
+            wheelSvg.innerHTML = wheelHtml;
+        }
+
+        // Función auxiliar para dibujar un arco SVG
+        function drawArc(cx, cy, r, startAngle, endAngle, color) {
+            const startRadians = (startAngle - 90) * Math.PI / 180;
+            const endRadians = (endAngle - 90) * Math.PI / 180;
+
+            const largeArcFlag = endAngle - startAngle <= 180 ? '0' : '1';
+
+            const d = [
+                'M', cx, cy,
+                'L', cx + r * Math.cos(startRadians), cy + r * Math.sin(startRadians),
+                'A', r, r, 0, largeArcFlag, 1, cx + r * Math.cos(endRadians), cy + r * Math.sin(endRadians),
+                'Z'
+            ].join(' ');
+
+            return `<path d="${d}" fill="${color}" stroke="#fff" stroke-width="2" />`;
+        }
+
+        // Función auxiliar para dibujar texto SVG centrado en el arco
+        function drawText(cx, cy, r, angle, text) {
+            const angleRadians = (angle - 90) * Math.PI / 180;
+            const x = cx + (r * 0.6) * Math.cos(angleRadians);
+            const y = cy + (r * 0.6) * Math.sin(angleRadians);
+
+            const rotation = angle;
+
+            return `<text x="${x}" y="${y}" text-anchor="middle" dominant-baseline="central" 
+                        font-family="Poppins, sans-serif" font-size="16" fill="#000"
+                        transform="rotate(${rotation} ${x} ${y})">${text}</text>`;
+        }
+
+        // Función para añadir un nuevo campo de input para una opción
+        function addInputGroup(initialValue = '') {
+            const inputGroup = document.createElement('div');
+            inputGroup.className = 'input-group';
+
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.className = 'option-input';
+            input.value = initialValue;
+            input.placeholder = `Opción ${inputsContainer.children.length + 1}`;
+            input.addEventListener('input', drawWheel);
+
+            const removeBtn = document.createElement('button');
+            removeBtn.className = 'remove-option-btn';
+            removeBtn.innerHTML = '×';
+            removeBtn.addEventListener('click', () => {
+                inputGroup.remove();
+                drawWheel();
+                updateInputPlaceholders();
+            });
+
+            inputGroup.appendChild(input);
+            inputGroup.appendChild(removeBtn);
+            inputsContainer.appendChild(inputGroup);
+
+            drawWheel();
+        }
+
+        // Función para actualizar los marcadores de posición de los inputs
+        function updateInputPlaceholders() {
+            const inputs = document.querySelectorAll('.option-input');
+            inputs.forEach((input, index) => {
+                input.placeholder = `Opción ${index + 1}`;
+            });
+        }
+
+        // Función para girar la ruleta
+        function spinWheel() {
+            if (isSpinning) return;
+
+            const options = getOptions();
+            if (options.length < 2) {
+                alert('Añade al menos 2 opciones para que la ruleta funcione.');
+                return;
+            }
+
+            isSpinning = true;
+            spinBtn.disabled = true;
+            winnerDisplay.textContent = '';
+
+            // Generar un giro aleatorio (mínimo 5 vueltas completas + una parte aleatoria)
+            const randomSpinDegrees = 360 * 5 + Math.random() * 360;
+            currentRotation += randomSpinDegrees;
+
+            // Aplicar la rotación al SVG
+            wheelSvg.style.transform = `rotate(${currentRotation - 90}deg)`;
+
+            // Temporizador para el final del giro (coincidiendo con la duración de la transición CSS)
+            setTimeout(() => {
+                const sliceAngle = 360 / options.length;
+                const actualRotation = currentRotation % 360;
+                // El puntero está en la parte superior (-90deg), el ganador es la opción que se detiene allí.
+                // Ajustamos el ángulo para calcular el índice correcto.
+                const winningAngle = (270 - (actualRotation % 360) + 360) % 360;
+                const winningIndex = Math.floor(winningAngle / sliceAngle);
+                
+                winnerDisplay.textContent = `🎉 El ganador es: ¡${options[winningIndex]}! 🎉`;
+                isSpinning = false;
+                spinBtn.disabled = false;
+            }, 5000); // 5000ms es la duración de la transición CSS
+        }
+
+        // Configuración inicial
+        addInputGroup('Spiderman 1');
+        addInputGroup('Batman');
+        addInputGroup('Superman');
+
+        addOptionBtn.addEventListener('click', () => addInputGroup());
+        spinBtn.addEventListener('click', spinWheel);
+    </script>
+
+</body>
+</html>
